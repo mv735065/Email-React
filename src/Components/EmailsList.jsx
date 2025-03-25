@@ -5,14 +5,15 @@ let initialState = { isRead: false, isFavourite: false };
 // let border=[#CFD2DC];
 //#F4F5F9
 //#CFD2DC
+// #E1E4EA
 
 const EmailsList = () => {
   let [emailData, setEmailData] = useState([]);
   let [filteredData, setFilteredData] = useState(emailData);
 
-
   const [status,setStatus]=useState({
     selectedEmailId:null,
+    activeFilter:'All',
   });
 
 
@@ -52,36 +53,29 @@ const EmailsList = () => {
       )
     );
   }
+  function handleFilter(type) {
+    switch (type) {
+      case "Read":
+        setFilteredData(emailData.filter((email) => email.isRead));
+        break;
+      case "Unread":
+        setFilteredData(emailData.filter((email) => !email.isRead));
+        break;
+      case "Favourite":
+        setFilteredData(emailData.filter((email) => email.isFavourite));
+        break;
+      case "All":
+      default:
+        setFilteredData(emailData);
+        break;
+    }
 
-  function handleFilterRead() {
-    setFilteredData(emailData.filter((email) => email.isRead));
     setStatus({
-      selectedEmailId:null,
-    })
-    
-  }
+      selectedEmailId: null,
+      activeFilter:type,
+    });
 
-  function handleFilterUnRead() {
-    setFilteredData(emailData.filter((email) => !email.isRead));
-    setStatus({
-      selectedEmailId:null,
-    })
   }
-
-  function handleFilterIsFavourite() {
-    setFilteredData(emailData.filter((email) => email.isFavourite));
-    setStatus({
-      selectedEmailId:null,
-    })
-  }
-
-  function handleFilterAll() {
-    setFilteredData(emailData);
-    setStatus({
-      selectedEmailId:null,
-    })
-  }
-
   useEffect(() => {
     async function dataFetch() {
       try {
@@ -95,7 +89,7 @@ const EmailsList = () => {
         setEmailData(emailsWithState);
         setFilteredData(emailsWithState);
       } catch (err) {
-        console.log("Error in fetching data");
+        console.log("Error in fetching data",err);
       }
     }
     dataFetch();
@@ -105,21 +99,17 @@ const EmailsList = () => {
     <>
       <div className="mx-8 mb-4 flex flex-row gap-4 ">
         <p className=" px-4 py-1">Filter</p>
-        <button className="cursor-pointer " onClick={() => handleFilterAll()}>
-          All
-        </button>
-        <button className="cursor-pointer" onClick={() => handleFilterRead()}>
-          Read
-        </button>
-        <button className="cursor-pointer" onClick={() => handleFilterUnRead()}>
-          Unread
-        </button>
-        <button
-          onClick={() => handleFilterIsFavourite()}
-          className="cursor-pointer"
-        >
-          Favourite
-        </button>
+        {["All", "Read", "Unread", "Favourite"].map((filter) => (
+          <button
+            key={filter}
+            className={`cursor-pointer px-4 py-1 rounded-md ${
+              status.activeFilter === filter ? "border border-[#CFD2DC] bg-[#E1E4EA]" : " border-transparent"
+            }`}
+            onClick={() => handleFilter(filter)}
+          >
+            {filter}
+          </button>
+        ))}
       </div>
       <div className="flex">
         <ul className={status.selectedEmailId ? "w-1/3" : "w-full" }>
@@ -128,6 +118,7 @@ const EmailsList = () => {
               email={email}
               key={email.id}
               handleOpenEmailContent={handleOpenEmail}
+              isSelected={status.selectedEmailId === email.id}
             />
           ))}
         </ul>
@@ -144,12 +135,15 @@ const EmailsList = () => {
   );
 };
 
-function Card({ email, handleOpenEmailContent }) {
+function Card({ email, handleOpenEmailContent,isSelected }) {
   let name = email.from.name;
   let firstLetter = name.substring(0, 1).toUpperCase();
   return (
     <div
-      className={`card flex border border-[#CFD2DC] mx-8 mb-4 rounded-xl  cursor-pointer bg-white `}
+    className={`card flex border mx-8 mb-4 rounded-xl cursor-pointer bg-white 
+      transition-all duration-300 
+      ${isSelected ? "border-2 border-[#E54065]" : "border-2 border-[#CFD2DC]"}
+    `}
       onClick={() => handleOpenEmailContent(email.id)}
     >
       <span className="flex justify-center items-center  w-12 h-12 p-4 bg-[#E54065] text-white text-3xl font-bold rounded-[50%] mt-2 ml-6 mr-4">
