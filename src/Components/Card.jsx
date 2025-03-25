@@ -1,8 +1,11 @@
 
 
-export default function Card({ email, handleOpenEmailContent, isSelected }) {
+export default function Card({ email, handleOpenEmailContent, selectedEmailId }) {
     let name = email.from.name;
     let firstLetter = name.substring(0, 1).toUpperCase();
+
+    let description=selectedEmailId ? email.short_description.substring(0,50)+"...":email.short_description;
+     
   
     return (
       <div
@@ -10,7 +13,7 @@ export default function Card({ email, handleOpenEmailContent, isSelected }) {
           email.isRead ? "bg-white " : "bg-[#F2F2F2]"
         }
         transition-all duration-300 
-        ${isSelected ? "border border-[#E54065]" : "border-2 border-[#CFD2DC]"}
+        ${selectedEmailId==email.id ? "border border-[#E54065]" : "border-2 border-[#CFD2DC]"}
       `}
         onClick={() => handleOpenEmailContent(email.id)}
       >
@@ -30,7 +33,7 @@ export default function Card({ email, handleOpenEmailContent, isSelected }) {
             Subject:<strong>{email.subject}</strong>
           </p>
   
-          <p className="my-2">{email.short_description}</p>
+          <p className="my-2">{description}</p>
           <div className="flex flex-row gap-4 justify-baseline">
             <p> Date: {new Date(email.date).toLocaleString()} </p>
             {email.isFavourite ? (

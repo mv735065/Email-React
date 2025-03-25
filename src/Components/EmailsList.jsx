@@ -62,6 +62,11 @@ const EmailsList = () => {
       case "Favourite":
         setFilteredData(emailData.filter((email) => email.isFavourite));
         break;
+      case "SortByTime":
+        let newData=[...emailData];
+        newData.sort((e1,e2)=>parseFloat(e1.date)-parseFloat(e2.date))
+        setFilteredData(newData);
+        break;
       case "All":
       default:
         setFilteredData(emailData);
@@ -73,6 +78,18 @@ const EmailsList = () => {
       activeFilter: type,
     });
   }
+   function handleSearchQuery(e){
+    
+      let query=e.target.value;
+   
+      
+      setFilteredData(emailData.filter((email) => email.from.name.toLowerCase().includes(query+"".toLowerCase())));
+      setStatus({
+        selectedEmailId: null,
+        activeFilter: 'All',
+      });
+   }
+
   useEffect(() => {
     async function dataFetch() {
       try {
@@ -96,7 +113,7 @@ const EmailsList = () => {
     <>
       <div className="mx-8 mb-4 flex flex-row gap-4 ">
         <p className=" px-4 py-1">Filter</p>
-        {["All", "Read", "Unread", "Favourite"].map((filter) => (
+        {["All", "Read", "Unread", "Favourite","SortByTime"].map((filter) => (
           <button
             key={filter}
             className={`cursor-pointer px-4 py-1 rounded-md ${
@@ -109,6 +126,7 @@ const EmailsList = () => {
             {filter}
           </button>
         ))}
+        <input className="ml-auto  border border-[#CFD2DC] w-2/5 pl-4"  placeholder="Search by name" onChange={handleSearchQuery}/>
       </div>
       <div className="flex">
         <ul className={status.selectedEmailId ? "w-1/3" : "w-full"}>
@@ -117,7 +135,7 @@ const EmailsList = () => {
               email={email}
               key={email.id}
               handleOpenEmailContent={handleOpenEmail}
-              isSelected={status.selectedEmailId === email.id}
+              selectedEmailId={status.selectedEmailId}
             />
           ))}
         </ul>

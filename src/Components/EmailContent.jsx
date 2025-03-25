@@ -7,7 +7,6 @@ const EmailContent = ({ email,handleIsFavorite }) => {
   let name = email.from.name;
   let firstLetter = name.substring(0, 1).toUpperCase();
 
-  let isFavourite=email.isFavourite;
 
   useEffect(() => {
     async function fetchData() {
