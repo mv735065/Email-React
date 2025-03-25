@@ -10,7 +10,7 @@ export default function Card({ email, handleOpenEmailContent, isSelected }) {
           email.isRead ? "bg-white " : "bg-[#F2F2F2]"
         }
         transition-all duration-300 
-        ${isSelected ? "border-2 border-[#E54065]" : "border-2 border-[#CFD2DC]"}
+        ${isSelected ? "border border-[#E54065]" : "border-2 border-[#CFD2DC]"}
       `}
         onClick={() => handleOpenEmailContent(email.id)}
       >

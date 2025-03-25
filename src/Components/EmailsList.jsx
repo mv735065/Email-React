@@ -48,9 +48,7 @@ const EmailsList = () => {
       prevData.map((email) => (email.id === id ? newEmail : email))
     );
     setFilteredData((prevFilteredData) =>
-      prevFilteredData.map((email) =>
-        email.id === id ? { ...email, isFavourite: !email.isFavourite } : email
-      )
+      prevFilteredData.map((email) => (email.id === id ? newEmail : email))
     );
   }
   function handleFilter(type) {
