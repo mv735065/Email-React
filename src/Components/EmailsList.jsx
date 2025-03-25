@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EmailContent from "./EmailContent";
+import Card from "./Card";
 
 let initialState = { isRead: false, isFavourite: false };
 // let border=[#CFD2DC];
@@ -11,14 +12,12 @@ const EmailsList = () => {
   let [emailData, setEmailData] = useState([]);
   let [filteredData, setFilteredData] = useState(emailData);
 
-  const [status,setStatus]=useState({
-    selectedEmailId:null,
-    activeFilter:'All',
+  const [status, setStatus] = useState({
+    selectedEmailId: null,
+    activeFilter: "All",
   });
 
-
   function handleOpenEmail(id) {
-
     let email = emailData.find((email) => email.id === id);
     let newEmail = {
       ...email,
@@ -32,10 +31,11 @@ const EmailsList = () => {
     );
 
     setStatus({
-      selectedEmailId:id,
-    })
-  }
+      ...status,
+      selectedEmailId: id,
+    });
 
+  }
 
   function handleIsFavorite(id) {
     let email = emailData.find((email) => email.id === id);
@@ -72,9 +72,8 @@ const EmailsList = () => {
 
     setStatus({
       selectedEmailId: null,
-      activeFilter:type,
+      activeFilter: type,
     });
-
   }
   useEffect(() => {
     async function dataFetch() {
@@ -89,7 +88,7 @@ const EmailsList = () => {
         setEmailData(emailsWithState);
         setFilteredData(emailsWithState);
       } catch (err) {
-        console.log("Error in fetching data",err);
+        console.log("Error in fetching data", err);
       }
     }
     dataFetch();
@@ -103,7 +102,9 @@ const EmailsList = () => {
           <button
             key={filter}
             className={`cursor-pointer px-4 py-1 rounded-md ${
-              status.activeFilter === filter ? "border border-[#CFD2DC] bg-[#E1E4EA]" : " border-transparent"
+              status.activeFilter === filter
+                ? "border border-[#CFD2DC] bg-[#E1E4EA]"
+                : " border-transparent"
             }`}
             onClick={() => handleFilter(filter)}
           >
@@ -112,7 +113,7 @@ const EmailsList = () => {
         ))}
       </div>
       <div className="flex">
-        <ul className={status.selectedEmailId ? "w-1/3" : "w-full" }>
+        <ul className={status.selectedEmailId ? "w-1/3" : "w-full"}>
           {filteredData.map((email) => (
             <Card
               email={email}
@@ -125,7 +126,9 @@ const EmailsList = () => {
         <div className={status.selectedEmailId ? "w-2/3" : "hidden"}>
           {status.selectedEmailId && (
             <EmailContent
-              email={emailData.find((email) => email.id === status.selectedEmailId)}
+              email={emailData.find(
+                (email) => email.id === status.selectedEmailId
+              )}
               handleIsFavorite={handleIsFavorite}
             />
           )}
@@ -135,47 +138,6 @@ const EmailsList = () => {
   );
 };
 
-function Card({ email, handleOpenEmailContent,isSelected }) {
-  let name = email.from.name;
-  let firstLetter = name.substring(0, 1).toUpperCase();
-  return (
-    <div
-    className={`card flex border mx-8 mb-4 rounded-xl cursor-pointer bg-white 
-      transition-all duration-300 
-      ${isSelected ? "border-2 border-[#E54065]" : "border-2 border-[#CFD2DC]"}
-    `}
-      onClick={() => handleOpenEmailContent(email.id)}
-    >
-      <span className="flex justify-center items-center  w-12 h-12 p-4 bg-[#E54065] text-white text-3xl font-bold rounded-[50%] mt-2 ml-6 mr-4">
-        {firstLetter}
-      </span>
 
-      <div className="details my-2">
-        <p>
-          From:
-          <strong>
-            {" " + name + " "} &lt;{email.from.email}&gt;
-          </strong>
-        </p>
-
-        <p>
-          Subject:<strong>{email.subject}</strong>
-        </p>
-
-        <p className="my-2">{email.short_description}</p>
-        <div className="flex flex-row gap-4 justify-baseline">
-          <p> Date: {new Date(email.date).toLocaleString()} </p>
-          {email.isFavourite ? (
-            <p className="text-[#E54065] mr-4 text-sm font-bold mt-0.5">
-              Favourite{" "}
-            </p>
-          ) : (
-            ""
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default EmailsList;
