@@ -7,6 +7,7 @@ let initialState = { isRead: false, isFavourite: false };
 //#F4F5F9
 //#CFD2DC
 // #E1E4EA
+let eachPageEmailQuantity = 5;
 
 const EmailsList = () => {
   let [emailData, setEmailData] = useState([]);
@@ -15,6 +16,7 @@ const EmailsList = () => {
   const [status, setStatus] = useState({
     selectedEmailId: null,
     activeFilter: "All",
+    presentPageNumber: 1,
   });
 
   function handleOpenEmail(id) {
@@ -34,7 +36,6 @@ const EmailsList = () => {
       ...status,
       selectedEmailId: id,
     });
-
   }
 
   function handleIsFavorite(id) {
@@ -51,6 +52,26 @@ const EmailsList = () => {
       prevFilteredData.map((email) => (email.id === id ? newEmail : email))
     );
   }
+
+  function handlePrevButton() {
+    let previousPage =
+      status.presentPageNumber - 1 <= 0 ? 1 : status.presentPageNumber - 1;
+    setStatus({
+      ...status,
+      presentPageNumber: previousPage,
+    });
+  }
+
+  function handleNextButton() {
+    let presntPage = status.presentPageNumber;
+    let totalPages = Math.ceil(filteredData.length / eachPageEmailQuantity);
+    let next = presntPage + 1 > totalPages ? totalPages : presntPage + 1;
+    setStatus({
+      ...status,
+      presentPageNumber: next,
+    });
+  }
+
   function handleFilter(type) {
     switch (type) {
       case "Read":
@@ -63,8 +84,8 @@ const EmailsList = () => {
         setFilteredData(emailData.filter((email) => email.isFavourite));
         break;
       case "SortByTime":
-        let newData=[...emailData];
-        newData.sort((e1,e2)=>parseFloat(e1.date)-parseFloat(e2.date))
+        let newData = [...emailData];
+        newData.sort((e1, e2) => parseFloat(e1.date) - parseFloat(e2.date));
         setFilteredData(newData);
         break;
       case "All":
@@ -74,21 +95,25 @@ const EmailsList = () => {
     }
 
     setStatus({
+      ...status,
       selectedEmailId: null,
       activeFilter: type,
     });
   }
-   function handleSearchQuery(e){
-    
-      let query=e.target.value;
-   
-      
-      setFilteredData(emailData.filter((email) => email.from.name.toLowerCase().includes(query+"".toLowerCase())));
-      setStatus({
-        selectedEmailId: null,
-        activeFilter: 'All',
-      });
-   }
+  function handleSearchQuery(e) {
+    let query = e.target.value;
+
+    setFilteredData(
+      emailData.filter((email) =>
+        email.from.name.toLowerCase().includes(query + "".toLowerCase())
+      )
+    );
+    setStatus({
+      ...status,
+      selectedEmailId: null,
+      activeFilter: "All",
+    });
+  }
 
   useEffect(() => {
     async function dataFetch() {
@@ -113,7 +138,7 @@ const EmailsList = () => {
     <>
       <div className="mx-8 mb-4 flex flex-row gap-4 ">
         <p className=" px-4 py-1">Filter</p>
-        {["All", "Read", "Unread", "Favourite","SortByTime"].map((filter) => (
+        {["All", "Read", "Unread", "Favourite", "SortByTime"].map((filter) => (
           <button
             key={filter}
             className={`cursor-pointer px-4 py-1 rounded-md ${
@@ -126,20 +151,31 @@ const EmailsList = () => {
             {filter}
           </button>
         ))}
-        <input className="ml-auto  border border-[#CFD2DC] w-2/5 pl-4"  placeholder="Search by name" onChange={handleSearchQuery}/>
+        <input
+          className="ml-auto  border border-[#CFD2DC] w-2/5 pl-4"
+          placeholder="Search by name"
+          onChange={handleSearchQuery}
+        />
       </div>
-      <div className="flex">
-        <ul className={status.selectedEmailId ? "w-1/3" : "w-full"}>
-          {filteredData.map((email) => (
-            <Card
-              email={email}
-              key={email.id}
-              handleOpenEmailContent={handleOpenEmail}
-              selectedEmailId={status.selectedEmailId}
-            />
-          ))}
+      <div className="flex min-h-[80vh]">
+        <ul className={`${status.selectedEmailId ? "w-1/3" : "w-full"} min-h-[80vh]`}>
+          {filteredData.map((email, index) => {
+            if (
+              index < eachPageEmailQuantity * (status.presentPageNumber - 1) ||
+              index > eachPageEmailQuantity * status.presentPageNumber - 1
+            )
+              return null;
+            return (
+              <Card
+                email={email}
+                key={email.id}
+                handleOpenEmailContent={handleOpenEmail}
+                selectedEmailId={status.selectedEmailId}
+              />
+            );
+          })}
         </ul>
-        <div className={status.selectedEmailId ? "w-2/3" : "hidden"}>
+        <div className={`${status.selectedEmailId ? "w-2/3" : "hidden"} `}>
           {status.selectedEmailId && (
             <EmailContent
               email={emailData.find(
@@ -150,10 +186,24 @@ const EmailsList = () => {
           )}
         </div>
       </div>
+      <div className="flex justify-around mt-4">
+        <button
+          onClick={() => handlePrevButton()}
+          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${status.presentPageNumber===1 ? 'cursor-not-allowed':null}`}
+          hidden={filteredData.length==0} 
+        >
+          Prev
+        </button>
+        <button
+          onClick={() => handleNextButton()}  
+          hidden={filteredData.length==0}
+          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${status.presentPageNumber===3 ? 'cursor-not-allowed':null}`}
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 };
-
-
 
 export default EmailsList;

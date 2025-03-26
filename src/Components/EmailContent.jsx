@@ -26,7 +26,7 @@ const EmailContent = ({ email,handleIsFavorite }) => {
     : "No email content available"; // Fallback text if body is missing
 
   return (
-    <div className="card flex border border-[#CFD2DC] rounded-xl cursor:pointer p-8 mr-4 bg-white">
+    <div className="card flex border border-[#CFD2DC] rounded-xl cursor:pointer p-8 mr-4 bg-white  ">
       <span className="flex justify-center items-center w-12 h-12 p-4 bg-[#E54065] text-white text-3xl font-bold rounded-[50%] mr-4">
         {firstLetter}
       </span>
