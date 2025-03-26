@@ -98,6 +98,7 @@ const EmailsList = () => {
       ...status,
       selectedEmailId: null,
       activeFilter: type,
+      presentPageNumber: 1,
     });
   }
   function handleSearchQuery(e) {
@@ -158,7 +159,11 @@ const EmailsList = () => {
         />
       </div>
       <div className="flex min-h-[80vh]">
-        <ul className={`${status.selectedEmailId ? "w-1/3" : "w-full"} min-h-[80vh]`}>
+        <ul
+          className={`${
+            status.selectedEmailId ? "w-1/3" : "w-full"
+          } min-h-[80vh]`}
+        >
           {filteredData.map((email, index) => {
             if (
               index < eachPageEmailQuantity * (status.presentPageNumber - 1) ||
@@ -189,15 +194,19 @@ const EmailsList = () => {
       <div className="flex justify-around mt-4">
         <button
           onClick={() => handlePrevButton()}
-          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${status.presentPageNumber===1 ? 'cursor-not-allowed':null}`}
-          hidden={filteredData.length==0} 
+          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${
+            status.presentPageNumber === 1 ? "cursor-not-allowed" : null
+          }`}
+          hidden={filteredData.length == 0}
         >
           Prev
         </button>
         <button
-          onClick={() => handleNextButton()}  
-          hidden={filteredData.length==0}
-          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${status.presentPageNumber===3 ? 'cursor-not-allowed':null}`}
+          onClick={() => handleNextButton()}
+          hidden={filteredData.length == 0}
+          className={`py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl ${
+            status.presentPageNumber === 3 ? "cursor-not-allowed" : null
+          }`}
         >
           Next
         </button>
