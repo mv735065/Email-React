@@ -1,6 +1,6 @@
 
 
-export default function Card({ email, handleOpenEmailContent, selectedEmailId }) {
+export default function EmailCard({ email, handleOpenEmailContent, selectedEmailId }) {
     let name = email.from.name;
     let firstLetter = name.substring(0, 1).toUpperCase();
 

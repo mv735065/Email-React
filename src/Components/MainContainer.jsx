@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EmailContent from "./EmailContent";
-import Card from "./Card";
+import EmailCard  from "./EmailCard";
+import NavBar from "./NavBar";
 
 let initialState = { isRead: false, isFavourite: false };
 let emailQuantityForEachPage = 5;
@@ -14,18 +15,47 @@ const EmailsList = () => {
     selectedEmailId: null,
     activeFilter: "All",
     presentPageNumber: 1,
+    searchQuery:null,
   });
-let   filteredData1 =emailData;
 
-  let [filteredData, setFilteredData] = useState(emailData);
+  const filterEmails = (filterType, data=emailData) => {
+    let filteredData = [];
 
-  let totalPages = Math.ceil(emailData.length / emailQuantityForEachPage);
+    if (filterType === "Read") {
+      filteredData = data.filter((email) => email.isRead);
+    } else if (filterType === "Unread") {
+      filteredData = data.filter((email) => !email.isRead || email.id==status.selectedEmailId);
+    } else if (filterType === "Favourite") {
+      filteredData = data.filter((email) => email.isFavourite || email.id==status.selectedEmailId);
+    } else if (filterType === "SortByTime") {
+      filteredData = [...data].sort(
+        (e1, e2) => new Date(e1.date) - new Date(e2.date)
+      );
+    } 
+    else {
+      filteredData = [...data];
+    }
 
+    if (status.searchQuery) {
+      let text = status.searchQuery;
+      filteredData = filteredData.filter((mail) => 
+        mail.from.name.toLowerCase().includes(text.toLowerCase()) // Case insensitive search
+      );
+    
+    }
+
+    return filteredData;
+  };
+
+  let filteredData = filterEmails(status.activeFilter);
+
+  let totalPages = Math.ceil(filteredData.length / emailQuantityForEachPage);
 
   useEffect(() => {
     async function dataFetch() {
       try {
         setIsLoading(true);
+        // throw new Error()
         let response = await fetch("https://flipkart-email-mock.now.sh");
         let data = await response.json();
         let emailsWithState = data.list.map((email) => ({
@@ -33,7 +63,6 @@ let   filteredData1 =emailData;
           ...initialState,
         }));
         setEmailData(emailsWithState);
-        setFilteredData(emailsWithState);
       } catch (err) {
         console.log("Error in fetching data", err);
         setError(error || "Unbale to fetch data");
@@ -53,9 +82,6 @@ let   filteredData1 =emailData;
     setEmailData((prevData) =>
       prevData.map((email) => (email.id === id ? newEmail : email))
     );
-    setFilteredData((prevFilteredData) =>
-      prevFilteredData.map((email) => (email.id === id ? newEmail : email))
-    );
 
     setStatus({
       ...status,
@@ -72,9 +98,6 @@ let   filteredData1 =emailData;
 
     setEmailData((prevData) =>
       prevData.map((email) => (email.id === id ? newEmail : email))
-    );
-    setFilteredData((prevFilteredData) =>
-      prevFilteredData.map((email) => (email.id === id ? newEmail : email))
     );
   }
 
@@ -98,27 +121,6 @@ let   filteredData1 =emailData;
   }
 
   function handleFilter(type) {
-    switch (type) {
-      case "Read":
-        setFilteredData(emailData.filter((email) => email.isRead));
-        break;
-      case "Unread":
-        setFilteredData(emailData.filter((email) => !email.isRead));
-        break;
-      case "Favourite":
-        setFilteredData(emailData.filter((email) => email.isFavourite));
-        break;
-      case "SortByTime":
-        let newData = [...emailData];
-        newData.sort((e1, e2) => parseFloat(e1.date) - parseFloat(e2.date));
-        setFilteredData(newData);
-        break;
-      case "All":
-      default:
-        setFilteredData(emailData);
-        break;
-    }
-
     setStatus({
       ...status,
       selectedEmailId: null,
@@ -128,43 +130,17 @@ let   filteredData1 =emailData;
   }
   function handleSearchQuery(e) {
     let query = e.target.value;
-
-    setFilteredData(
-      emailData.filter((email) =>
-        email.from.name.toLowerCase().includes(query + "".toLowerCase())
-      )
-    );
     setStatus({
       ...status,
       selectedEmailId: null,
-      activeFilter: "All",
+      searchQuery:query,
     });
   }
   return (
     <>
       {/* Filter Section */}
-      <div className="mx-8 mb-4 flex flex-row gap-4">
-        <p className="px-4 py-1">Filter</p>
-        {["All", "Read", "Unread", "Favourite", "SortByTime"].map((filter) => (
-          <button
-            key={filter}
-            className={`cursor-pointer px-4 py-1 rounded-md ${
-              status.activeFilter === filter
-                ? "border border-[#CFD2DC] bg-[#E1E4EA]"
-                : "border-transparent"
-            }`}
-            onClick={() => handleFilter(filter)}
-          >
-            {filter}
-          </button>
-        ))}
-        <input
-          className="ml-auto border border-[#CFD2DC] w-2/5 pl-4"
-          placeholder="Search by name"
-          onChange={handleSearchQuery}
-        />
-      </div>
-  
+      <NavBar activeFilter={status.activeFilter} handleFilter={handleFilter} handleSearchQuery={handleSearchQuery}/>
+
       {/* Loading Indicator */}
       {isLoading ? (
         <div className="flex justify-center items-center mt-[30vh]">
@@ -179,14 +155,18 @@ let   filteredData1 =emailData;
         <>
           {/* Email List & Content Section */}
           <div className="flex min-h-[80vh]">
-            <ul className={`${status.selectedEmailId ? "w-1/3" : "w-full"} min-h-[80vh]`}>
+            <ul
+              className={`${
+                status.selectedEmailId ? "w-1/3" : "w-full"
+              } min-h-[80vh]`}
+            >
               {filteredData
                 .slice(
                   emailQuantityForEachPage * (status.presentPageNumber - 1),
                   emailQuantityForEachPage * status.presentPageNumber
                 )
                 .map((email) => (
-                  <Card
+                  <EmailCard
                     email={email}
                     key={email.id}
                     handleOpenEmailContent={handleOpenEmail}
@@ -194,18 +174,20 @@ let   filteredData1 =emailData;
                   />
                 ))}
             </ul>
-  
+
             {/* Email Content */}
             {status.selectedEmailId && (
               <div className="w-2/3">
                 <EmailContent
-                  email={emailData.find((email) => email.id === status.selectedEmailId)}
+                  email={emailData.find(
+                    (email) => email.id === status.selectedEmailId
+                  )}
                   handleIsFavorite={handleIsFavorite}
                 />
               </div>
             )}
           </div>
-  
+
           {/* Pagination Buttons */}
           {filteredData.length > 0 && (
             <div className="flex justify-around mt-4">
@@ -219,7 +201,7 @@ let   filteredData1 =emailData;
               <button
                 onClick={handleNextButton}
                 className="py-2 px-8 border border-[#CFD2DC] bg-white rounded-xl"
-                disabled={status.presentPageNumber === 3} // Consider making this dynamic
+                disabled={status.presentPageNumber === totalPages}
               >
                 Next
               </button>
@@ -229,7 +211,6 @@ let   filteredData1 =emailData;
       )}
     </>
   );
-  
 };
 
 export default EmailsList;
